@@ -30,8 +30,8 @@ local rn = PN:Range_Noise2D(x, y, min, max)
 ```
 
 ## Results
-Below is a video with a 2D texture being generated using Normalized_Noise2D, where the noise value is used as the pixel color:
-https://github.com/FiniteUI/Lua-Perlin-Noise/assets/33558498/7d10f027-3a42-409f-aceb-e57769f30102
+Below is an image with a 2D texture being generated using Normalized_Noise2D, where the noise value is used as the pixel color:
+![image](https://github.com/FiniteUI/Lua-Perlin-Noise/assets/33558498/30e9b42a-1840-4320-9120-c8422d04f276)
 
 ## Requirements
 This script relies on three of my other libraries:
