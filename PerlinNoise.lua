@@ -4,6 +4,19 @@ require("SquirrelNoise5-LuaJIT")
 PerlinNoise = {}
 PerlinNoise.__index = PerlinNoise
 PerlinNoise.__name = "PerlinNoise"
+
+-- Perlin Noise Range : +/- sqrt(D/4) * M
+-- where D is the number of dimensions, and M is the magnitude of the constanct vectors being used
+-- for 1D, M = 1, N = 1, range = +/- sqrt(1/4) * 1 = +/- 0.5
+-- for 2D, M = sqrt(2), N = 2, range = +/- sqrt(1/2) * sqrt(2) = +/- 1
+
+--1D constants
+PerlinNoise.MAX_1D = math.sqrt(1/4)
+PerlinNoise.MIN_1D = -PerlinNoise.MAX_1D
+PerlinNoise.RANGE_1D = PerlinNoise.MAX_1D - PerlinNoise.MIN_1D
+PerlinNoise.NORMAL_1D = 1 / PerlinNoise.RANGE_1D
+
+--2D constants
 PerlinNoise.MAX_2D = math.sqrt(2) * math.sqrt(1/2)
 PerlinNoise.MIN_2D = -PerlinNoise.MAX_2D
 PerlinNoise.RANGE_2D = PerlinNoise.MAX_2D - PerlinNoise.MIN_2D
@@ -67,7 +80,17 @@ local function Fade(t)
     return t * t * t * (t * (t * 6 - 15) + 10)
 end
 
-local function GetConstantVector(value)
+local function GetConstantVector1D(value)
+    --choose one of the two directional vectors (left, right)
+    value = value % 2
+    if value == 0 then
+        return -1
+    else
+        return 1
+    end
+end
+
+local function GetConstantVector2D(value)
     --choose one of the four directional vectors (up-right, up-left, down-left, down-right)
     value = value % 4
     local v
@@ -103,6 +126,73 @@ function PerlinNoise:new(seed, size)
     return new
 end
 
+--1D functions
+function PerlinNoise:Noise1D(x)
+    --generate vectors from the integers on either side of the input
+    local x_float = x - math.floor(x)
+    local left = x_float
+    local right = x_float - 1
+
+    --grab the permutation table value for the integers on either side of the input
+    local x_index = (math.floor(x) % self.size) + 1
+    local left_value = self.permutation_table[x_index]
+    local right_value = self.permutation_table[x_index + 1]
+
+    -- compute dot product between the constant vector and left/right vectors
+    local dot_left = left * GetConstantVector1D(left_value)
+    local dot_right = right * GetConstantVector1D(right_value)
+
+    -- lerp between them for result
+    local x_fade = Fade(x_float)
+    local result = Lerp(dot_left, dot_right, x_fade)
+
+    return result
+end
+
+function PerlinNoise:Normalized_Noise1D(x)
+    local n = self:Noise1D(x)
+    n = n + math.abs(PerlinNoise.MIN_1D)
+    n = n * PerlinNoise.NORMAL_1D
+
+    --and just to be safe due to issues with precision
+    if n < 0 then
+        n = 0
+    elseif n > 1 then
+        n = 1
+    end
+
+    return n
+end
+
+function PerlinNoise:Range_Noise1D(x, min, max)
+    -- returns perlin noise scaled to a given range
+    assert(min < max, "Error: Min must be less than max.")
+
+    local scale = max - min
+    local n = self:Normalized_Noise1D(x)
+    n = n * scale + min
+
+    return n
+end
+
+function PerlinNoise:Octave_Noise1D(x, octaves, frequency, amplitude)
+    frequency = frequency or 0.005
+    amplitude = amplitude or 1
+
+    local result = 0
+    local n
+    for i = 0, octaves do
+        n = self:Noise1D(x * frequency) * amplitude
+        result = result + n
+
+        amplitude = amplitude * 0.5
+        frequency = frequency * 2
+    end
+
+    return result
+end
+
+--2D functions
 function PerlinNoise:Noise2D(x, y)
     --generate vectors from the corners of the 'grid' to the input point
     local x_float = x - math.floor(x)
@@ -124,10 +214,10 @@ function PerlinNoise:Noise2D(x, y)
     local bottom_left_value = self.permutation_table[self.permutation_table[x_index] + y_index]
 
     -- compute dot product between constant vectors and corner vectors
-    local dot_tr = Vector.Dot_Product(top_right, GetConstantVector(top_right_value))
-    local dot_tl = Vector.Dot_Product(top_left, GetConstantVector(top_left_value))
-    local dot_br = Vector.Dot_Product(bottom_right, GetConstantVector(bottom_right_value))
-    local dot_bl = Vector.Dot_Product(bottom_left, GetConstantVector(bottom_left_value))
+    local dot_tr = Vector.Dot_Product(top_right, GetConstantVector2D(top_right_value))
+    local dot_tl = Vector.Dot_Product(top_left, GetConstantVector2D(top_left_value))
+    local dot_br = Vector.Dot_Product(bottom_right, GetConstantVector2D(bottom_right_value))
+    local dot_bl = Vector.Dot_Product(bottom_left, GetConstantVector2D(bottom_left_value))
 
     -- lerp between them for result
     local x_fade = Fade(x_float)
@@ -138,15 +228,6 @@ function PerlinNoise:Noise2D(x, y)
 end
 
 function PerlinNoise:Normalized_Noise2D(x, y)
-    -- if using normalized constant vectors, the range is:
-    -- [- (N/4) ^ -2, (N/4 ^ -2)]
-    -- where N is the dimensions. So for 2D, it's -sqrt(1/2) to sqrt(1/2)
-    -- however most implementations don't use normalized constant vectors
-    -- in this case you need to scale by the magnitude of the constant vectors
-    -- for perlin's original vectors, this is sqrt(2)
-    -- so, theoretically, the range should be -(sqrt(2) * sqrt(1/2)) to (sqrt(2) * sqrt(1/2))
-    -- which just so happens to be -1 to 1
-
     local n = self:Noise2D(x, y)
     n = n + math.abs(PerlinNoise.MIN_2D)
     n = n * PerlinNoise.NORMAL_2D
@@ -168,5 +249,6 @@ function PerlinNoise:Range_Noise2D(x, y, min, max)
     local scale = max - min
     local n = self:Normalized_Noise2D(x, y)
     n = n * scale + min
+
     return n
 end
