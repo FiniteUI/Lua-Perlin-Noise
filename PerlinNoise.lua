@@ -119,7 +119,10 @@ function PerlinNoise:new(seed, size, permutation_type)
     local new = {}
 
     new.seed = seed
-    new.size = size or 256
+    if size == nil then
+        size = 256
+    end
+    new.size = size
     
     --perlin - use perlin's original permutation table
     --shuffled - use a shuffled permutation table of size size
