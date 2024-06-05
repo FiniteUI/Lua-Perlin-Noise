@@ -1,4 +1,4 @@
-j# Lua-Perlin-Noise
+# Lua-Perlin-Noise
 
 This is a simple implementation of Perlin Noise in Lua. Currently, only 2D noise is supported.
 
