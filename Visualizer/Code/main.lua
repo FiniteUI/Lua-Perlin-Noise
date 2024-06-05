@@ -8,10 +8,14 @@ local function loadOctavePerlinNoise2D()
     local height = math.floor(LOVE.graphics.getHeight() / SCALE)
     local PN = PerlinNoise:new(SEED)
 
+    local x
+    local y
     for i = 0, width do
         local temp = {}
         for j = 0, height do
-            local color = PN:NormalizedOctaveNoise2D(i, j, OCTAVES, FREQUENCY, AMPLITUDE)
+            x = i + X_OFFSET
+            y = j + Y_OFFSET
+            local color = PN:NormalizedOctaveNoise2D(x, y, OCTAVES, FREQUENCY, AMPLITUDE)
             table.insert(temp, color)
         end
         table.insert(NOISE, temp)
@@ -23,20 +27,27 @@ local function loadOctavePerlinNoise1D()
     local PN = PerlinNoise:new(SEED)
     local width = math.floor(LOVE.graphics.getWidth() / SCALE)
 
+    local index
     for i = 0, width do
-        local value = PN:OctaveNoise1D(i, OCTAVES, FREQUENCY, AMPLITUDE)
+        index = i + X_OFFSET
+        local value = PN:OctaveNoise1D(index, OCTAVES, FREQUENCY, AMPLITUDE)
         table.insert(NOISE, value)
     end
 end
 
-local function PrintDebugData(t)
+local function PrintDebugData()
+    local debug_data = {
+        "Change Seed: F12, Change Type: F11, +/- Frequency: F2/F1, +/- Amplitude: F4/F3, +/- Scale: F6/F5, +/- Octaves: F8/F7, Pan: Arrow keys",
+        "Type: " .. CURRENT_NOISE_TYPE .. ", Seed: " .. SEED .. ", Scale: " .. SCALE .. ", Frequency: " .. FREQUENCY .. ", Amplitude: " .. AMPLITUDE .. ", Octaves: " .. OCTAVES .. ", X Offset: " .. X_OFFSET .. ", Y Offset: " .. Y_OFFSET
+    }
+
     local text_color = {138 / 255, 247 / 255, 64 / 255}
 
     local offset = 0
     local interval = 12
 
     LOVE.graphics.setColor(text_color)
-    for k, v in pairs(t) do
+    for k, v in pairs(debug_data) do
         LOVE.graphics.print(v, 0, offset)
         offset = offset + interval
     end
@@ -60,9 +71,9 @@ function LOVE.load()
     math.randomseed(math.floor(os.time()))
     SEED = math.random(0, 4294967296)
     NOISE = {}
-    SCALE = 1
+    SCALE = 5
     FREQUENCY = 0.1
-    AMPLITUDE = 1
+    AMPLITUDE = 10
     OCTAVES = 1
     NOISE_TYPES = {
         OCTAVE_PERLIN_1D = "OCTAVE_PERLIN_1D",
@@ -70,7 +81,9 @@ function LOVE.load()
     }
     CURRENT_NOISE_TYPE = NOISE_TYPES.OCTAVE_PERLIN_1D
 
-    HEADER = 90
+    HEADER = 45
+    X_OFFSET = 0
+    Y_OFFSET = 0
 
     loadNoise()
 end
@@ -98,7 +111,6 @@ function LOVE.draw()
 
                 x = (k - 1) * SCALE 
                 y = (k2 - 1) * SCALE
-                --LOVE.graphics.points(k, k2)
                 LOVE.graphics.rectangle('fill', x, y, SCALE, SCALE)
             end
         end
@@ -108,16 +120,7 @@ function LOVE.draw()
     LOVE.graphics.setColor(7 / 255, 12 / 255, 20 /255)
     LOVE.graphics.rectangle('fill', 0, 0, LOVE.graphics.getWidth(), HEADER)
 
-    local debug_data = {
-        "Change Seed: F12, Change Type: F11, +/- Frequency: F2/F1, +/- Amplitude: F4/F3, +/- Scale: F6/F5, +/- Octaves: F8/F7",
-        "Type: " .. CURRENT_NOISE_TYPE,
-        "Seed: " .. SEED,
-        "Scale: " .. SCALE,
-        "Frequency: " .. FREQUENCY,
-        "Amplitude: " .. AMPLITUDE,
-        "Octaves: " .. OCTAVES
-    }
-    PrintDebugData(debug_data)
+    PrintDebugData()
 end
 
 function LOVE.keypressed(key)
@@ -169,6 +172,18 @@ function LOVE.keypressed(key)
         if OCTAVES > 1 then
             OCTAVES = OCTAVES - 1
         end
+        change = true
+    elseif key == "up" then
+        Y_OFFSET = Y_OFFSET - 1
+        change = true
+    elseif key == "down" then
+        Y_OFFSET = Y_OFFSET + 1
+        change = true
+    elseif key == "left" then
+        X_OFFSET = X_OFFSET - 1
+        change = true
+    elseif key == "right" then
+        X_OFFSET = X_OFFSET + 1
         change = true
     end
 
