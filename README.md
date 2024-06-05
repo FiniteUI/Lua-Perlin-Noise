@@ -28,18 +28,18 @@ local PN = PerlinNoise:new(math.floor(os.time()), 256, 'shuffled')
 ```
 
 The following noise functions are available:
-- Noise1D takes x and generates classic Perlin noise in the range [-0.5, 0.5].
-- NormalizedNoise1D takes x generates Perlin noise in the range [0, 1].
-- RangeNoise1D takes x, min, and max, and returns Perlin noise within the range [min, max].
-- OctaveNoise1D taxes x, octaves, frequency, and amplitude and layers Perlin noise in octaves to generate more detail.
-- NormalizedOctaveNoise1D is the same as NormalizedNoise1D but uses OctaveNoise1D as the base instead of Noise1D.
-- RangeOctaveNoise1D is the same as RangeNoise1D but uses OctaveNoise1D as the base instead of Noise1D.
-- Noise2D takes x and y and generates classic Perlin noise in the range [-0.5, 0.5].
-- NormalizedNoise2D takes x and y generates Perlin noise in the range [0, 1].
-- RangeNoise2D takes x, y, min, and max, and returns Perlin noise within the range [min, max].
-- OctaveNoise2D taxes x, y, octaves, frequency, and amplitude and layers Perlin noise in octaves to generate more detail.
-- NormalizedOctaveNoise2D is the same as NormalizedNoise2D but uses OctaveNoise2D as the base instead of Noise2D.
-- RangeOctaveNoise2D is the same as RangeNoise2D but uses OctaveNoise2D as the base instead of Noise2D.
+- _Noise1D_ takes x and generates classic Perlin noise in the range [-0.5, 0.5].
+- _NormalizedNoise1D_ takes x generates Perlin noise in the range [0, 1].
+- _RangeNoise1D_ takes x, min, and max, and returns Perlin noise within the range [min, max].
+- _OctaveNoise1D_ taxes x, octaves, frequency, and amplitude and layers Perlin noise in octaves to generate more detail.
+- _NormalizedOctaveNoise1D_ is the same as _NormalizedNoise1D_ but uses _OctaveNoise1D_ as the base instead of Noise1D.
+- _RangeOctaveNoise1D_ is the same as _RangeNoise1D_ but uses _OctaveNoise1D_ as the base instead of Noise1D.
+- _Noise2D_ takes x and y and generates classic Perlin noise in the range [-0.5, 0.5].
+- _NormalizedNoise2D_ takes x and y generates Perlin noise in the range [0, 1].
+- _RangeNoise2D_ takes x, y, min, and max, and returns Perlin noise within the range [min, max].
+- _OctaveNoise2D_ taxes x, y, octaves, frequency, and amplitude and layers Perlin noise in octaves to generate more detail.
+- _NormalizedOctaveNoise2D_ is the same as _NormalizedNoise2D_ but uses _OctaveNoise2D_ as the base instead of _Noise2D_.
+- _RangeOctaveNoise2D_ is the same as _RangeNoise2D_ but uses _OctaveNoise2D_ as the base instead of Noise2D.
 
 ```lua
 local n1 = PN:Noise1D(x)
