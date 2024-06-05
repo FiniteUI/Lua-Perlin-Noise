@@ -117,7 +117,6 @@ function PerlinNoise:new(seed, size, permutation_type)
     assert((type(size) == 'number' and math.fmod(size, 1) == 0) or  size == nil, "Error: Size must be an integer.")
 
     local new = {}
-    setmetatable(new, self)
 
     new.seed = seed
     new.size = size or 256
@@ -125,7 +124,10 @@ function PerlinNoise:new(seed, size, permutation_type)
     --perlin - use perlin's original permutation table
     --shuffled - use a shuffled permutation table of size size
     --infinite - use random values instead of a permutationt able
-    new.permutation_type = permutation_type or 'shuffled'
+    if permutation_type == nil then
+        permutation_type = 'shuffled'
+    end
+    new.permutation_type = permutation_type
 
     --generate permutation table
     if permutation_type == 'shuffled' then
@@ -137,6 +139,7 @@ function PerlinNoise:new(seed, size, permutation_type)
         new.permutation_table = PerlinPermutationTable()
     end
     
+    setmetatable(new, self)
     return new
 end
 
